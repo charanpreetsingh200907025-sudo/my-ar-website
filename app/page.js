@@ -1,41 +1,36 @@
 "use client";
 
 import { useState } from "react";
+import Script from "next/script";
 import { QRCodeCanvas } from "qrcode.react";
 
 export default function Home() {
-  const [modelFile, setModelFile] = useState(null);
-  const [modelUrl, setModelUrl] = useState("");
-  const [pageUrl, setPageUrl] = useState("");
+  const [fileUrl, setFileUrl] = useState("");
 
-  // When user selects a file
+  // Handle file upload
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.name.endsWith(".glb")) {
-      setModelFile(file);
-      const url = URL.createObjectURL(file); // Temporary browser URL
-      setModelUrl(url);
-      setPageUrl(window.location.href); // Current page URL for QR
-    } else {
-      alert("Please select a valid .glb file");
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setFileUrl(url);
     }
   };
 
   return (
-    <main style={{ minHeight: "100vh", background: "#111", color: "white", padding: "20px" }}>
-      <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "20px", textAlign: "center" }}>
+    <div style={{ padding: "20px", textAlign: "center" }}>
+      <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "20px" }}>
         Dynamic AR Model Viewer
       </h1>
 
       {/* File uploader */}
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        <input type="file" accept=".glb" onChange={handleFileChange} />
+      <div style={{ marginBottom: "20px" }}>
+        <input type="file" accept=".glb,.gltf" onChange={handleFileChange} />
       </div>
 
-      {/* Show 3D Model if selected */}
-      {modelUrl && (
+      {/* Show 3D Model */}
+      {fileUrl && (
         <model-viewer
-          src={modelUrl}
+          src={fileUrl}
           ar
           ar-modes="scene-viewer webxr quick-look"
           camera-controls
@@ -44,12 +39,12 @@ export default function Home() {
         ></model-viewer>
       )}
 
-      {/* QR Code */}
-      {modelUrl && pageUrl && (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <h2>Scan on your phone to view AR:</h2>
+      {/* Show QR Code */}
+      {fileUrl && (
+        <div style={{ marginTop: "20px" }}>
+          <h2>Scan on your phone:</h2>
           <QRCodeCanvas
-            value={pageUrl}
+            value={window.location.origin + fileUrl}
             size={180}
             bgColor="#fff"
             fgColor="#000"
@@ -57,9 +52,12 @@ export default function Home() {
         </div>
       )}
 
-      {/* Load model-viewer */}
-      <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-    </main>
+      {/* Load Google's model-viewer script */}
+      <Script
+        type="module"
+        src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.0.1/model-viewer.min.js"
+      />
+    </div>
   );
 }
- 
+
